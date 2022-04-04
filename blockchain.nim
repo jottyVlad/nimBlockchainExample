@@ -2,7 +2,7 @@ import nimSHA2, std/times
 from strutils import intToStr
 
 type
-    Block = ref object of RootObj
+    Block* = ref object of RootObj
         index: int
         timestamp: string
         status: int
@@ -21,7 +21,7 @@ proc generateHash(blockchain_block: Block) : string =
     let hash = digest.hex()
     return hash
 
-proc generateBlock(blockchain_block: Block, status: int) : Block = 
+proc generateBlock*(blockchain_block: Block, status: int) : Block = 
     var time = now().format("yyyy-MM-dd-hh-mm-ss")
     var index = blockchain_block.index + 1
     var prevHash = blockchain_block.hash
@@ -34,7 +34,7 @@ proc generateBlock(blockchain_block: Block, status: int) : Block =
     newBlock.hash = generateHash(newBlock)
     return newBlock
 
-proc generateInitBlock(status: int) : Block = 
+proc generateInitBlock*(status: int) : Block = 
     var time = now().format("yyyy-MM-dd-hh-mm-ss")
     var index = 0
     var prevHash = ""
@@ -48,10 +48,8 @@ proc generateInitBlock(status: int) : Block =
     newBlock.hash = generateHash(newBlock)
     return newBlock
 
-proc isBlockValid(oldBlock: Block, newBlock: Block) : bool = 
+proc isBlockValid*(oldBlock: Block, newBlock: Block) : bool = 
     if oldBlock.index + 1 != newBlock.index: return false
     if oldBlock.hash != newBlock.prevHash: return false
     if generateHash(newBlock) != newBlock.hash: return false
     return true
-
-export generateInitBlock, Block, generateBlock, isBlockValid
