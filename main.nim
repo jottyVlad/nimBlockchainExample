@@ -1,10 +1,10 @@
-import jester, strutils, asyncdispatch, json, std/jsonutils, blockchain
+import jester, strutils, asyncdispatch, json, std/jsonutils, blockchain/[block_impl, chain]
 
-var chain = initChain(0)
+var chainObj = initChain(0)
 
 proc replaceChain*(newBlocks: Chain) = 
-    if newBlocks.blocks.len > chain.blocks.len:
-        chain = newBlocks
+    if newBlocks.blocks.len > chainObj.blocks.len:
+        chainObj = newBlocks
 
 proc generateResponse(ch: Chain) : string = 
     var response = "";
@@ -16,15 +16,16 @@ proc generateResponse(ch: Chain) : string =
 
 router mainRouter:
     get "/":
-        resp(generateResponse(chain))
+        resp(generateResponse(chainObj))
 
     get "/create/@status":
-        var newBlock : Block = generateBlock(chain.blocks[chain.blocks.len - 1], parseInt(@"status"))
-        if isBlockValid(chain.blocks[chain.blocks.len - 1], newBlock):
-            chain.blocks.add(newBlock)
+        var latestBlock = chainObj.getLatestBlock()
+        var newBlock : Block = generateBlock(chainObj, parseInt(@"status"))
+        var validTuple = isBlockValid(latestBlock, newBlock)
+        if validTuple[0]:
             resp(%newBlock)
         else:
-            resp("There is an error corrupted")
+            resp("There is an error corrupted <br />" & validTuple[1])
 
 proc main() =
     let port = Port(2857)
